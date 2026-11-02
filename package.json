@@ -1,0 +1,11 @@
+{
+  "name": "builder-card",
+  "version": "1.0.0",
+  "description": "Developer Builder Card web application fetching GitHub profile, top repos, languages, and activity.",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": ["github", "builder-card", "portfolio", "developer"],
+  "author": "",
+  "license": "MIT"
+}
