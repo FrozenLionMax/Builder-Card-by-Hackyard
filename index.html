@@ -1,238 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Builder Card — GitHub Developer Profile</title>
-  <meta name="description" content="Generate an instant builder profile card for any GitHub developer showing top repos, main languages, and recent activity." />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
-  <!-- Google Fonts: Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Builder Card</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-container">
-    
-    <!-- Top Header -->
-    <header class="header">
-      <h1 class="main-title">Builder Card</h1>
-      <p class="subtitle">Enter any GitHub username to view their profile, top repos, languages, and recent activity.</p>
-    </header>
+  <main class="container">
+    <h1>GitHub Builder Card</h1>
+    <p class="subtitle">Enter a GitHub username to see their developer profile</p>
 
-    <!-- Search Section -->
-    <section class="search-section">
-      <form id="searchForm" class="search-form" onsubmit="return false;">
-        <div class="input-wrapper">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input 
-            type="text" 
-            id="usernameInput" 
-            placeholder="Enter GitHub username (e.g. shadcn, torvalds, gaearon)..." 
-            autocomplete="off" 
-            spellcheck="false"
-            required 
-          />
-          <button type="button" id="clearBtn" class="clear-btn" aria-label="Clear input" style="display: none;">&times;</button>
-        </div>
-        <button type="submit" id="searchBtn" class="search-btn">
-          <span>Generate Card</span>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
-      </form>
+    <!-- Search Form -->
+    <form id="searchForm">
+      <input type="text" id="username" placeholder="GitHub username (e.g. FrozenLionMax, torvalds)" required>
+      <button type="submit">Search</button>
+    </form>
 
-      <!-- Quick Suggestion Chips -->
-      <div class="suggestions">
-        <span class="suggestions-label">Try:</span>
-        <button type="button" class="chip" data-user="FrozenLionMax">FrozenLionMax</button>
-        <button type="button" class="chip" data-user="shadcn">shadcn</button>
-        <button type="button" class="chip" data-user="torvalds">torvalds</button>
-        <button type="button" class="chip" data-user="gaearon">gaearon</button>
-        <button type="button" class="chip" data-user="yyx990803">yyx990803</button>
-      </div>
-    </section>
+    <!-- Status Messages -->
+    <div id="loading" class="status" style="display: none;">Loading profile...</div>
+    <div id="error" class="status error" style="display: none;"></div>
 
-    <!-- Status Messages (Loading, Error, Idle) -->
-    <div id="statusContainer" class="status-container">
+    <!-- Builder Card -->
+    <section id="card" class="card" style="display: none;">
       
-      <!-- Idle Initial State -->
-      <div id="idleState" class="state-card idle-state">
-        <div class="state-icon">⚡</div>
-        <h3>Ready to build</h3>
-        <p>Type a GitHub handle above or click any suggested builder to generate their card.</p>
-      </div>
-
-      <!-- Loading Skeleton State -->
-      <div id="loadingState" class="state-card loading-state" style="display: none;">
-        <div class="spinner"></div>
-        <p>Fetching developer profile, repositories, and activity from GitHub...</p>
-      </div>
-
-      <!-- Error State -->
-      <div id="errorState" class="state-card error-state" style="display: none;">
-        <div class="error-icon">⚠️</div>
-        <h3 id="errorTitle">User Not Found</h3>
-        <p id="errorMessage">Could not retrieve GitHub details for this username. Please verify the handle.</p>
-        <button type="button" class="retry-btn" id="retryBtn">Try Another User</button>
-      </div>
-
-    </div>
-
-    <!-- Main Builder Card (Shown when data is loaded) -->
-    <main id="builderCard" class="builder-card" style="display: none;">
-      
-      <!-- Card Action Bar -->
-      <div class="card-action-bar">
-        <span class="card-status-badge">
-          <span class="live-dot"></span> LIVE BUILDER PROFILE
-        </span>
-        <div class="card-action-buttons">
-          <button type="button" id="copyLinkBtn" class="action-btn" title="Copy link to this card">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-            <span>Share Link</span>
-          </button>
-          <button type="button" id="printBtn" class="action-btn" title="Save or Print Card">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M6 9V2h12v7"></path>
-              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-              <rect x="6" y="14" width="12" height="8"></rect>
-            </svg>
-            <span>Save / Print</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Profile Header Block -->
-      <section class="profile-header">
-        <div class="profile-avatar-wrapper">
-          <img id="profileAvatar" class="profile-avatar" src="" alt="Profile Avatar" />
-        </div>
+      <!-- Profile Header -->
+      <div class="profile-header">
+        <img id="avatar" alt="Avatar">
         <div class="profile-info">
-          <div class="name-row">
-            <h2 id="profileName" class="profile-name">Developer Name</h2>
-            <a id="githubLink" class="github-link-btn" href="#" target="_blank" rel="noopener noreferrer">
-              <span>View on GitHub</span>
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                <polyline points="15 3 21 3 21 9"></polyline>
-                <line x1="10" y1="14" x2="21" y2="3"></line>
-              </svg>
-            </a>
-          </div>
-          <p id="profileHandle" class="profile-handle">@username</p>
-          <p id="profileBio" class="profile-bio">Bio description goes here...</p>
-
-          <!-- Meta Badges: Location, Website, Joined -->
-          <div class="profile-meta">
-            <div id="metaLocation" class="meta-item" style="display: none;">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-              <span id="locationText">Location</span>
-            </div>
-            <div id="metaWebsite" class="meta-item" style="display: none;">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="2" y1="12" x2="22" y2="12"></line>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-              </svg>
-              <a id="websiteLink" href="#" target="_blank" rel="noopener noreferrer">Website</a>
-            </div>
-            <div id="metaJoined" class="meta-item">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span id="joinedText">Joined Date</span>
-            </div>
+          <h2 id="name"></h2>
+          <a id="profileLink" target="_blank" rel="noopener noreferrer"></a>
+          <p id="bio"></p>
+          <div class="stats">
+            <span><strong id="reposCount">0</strong> Repos</span>
+            <span><strong id="followersCount">0</strong> Followers</span>
+            <span><strong id="followingCount">0</strong> Following</span>
           </div>
         </div>
-      </section>
+      </div>
 
-      <!-- Quick Metrics Counters -->
-      <section class="stats-grid">
-        <div class="stat-card">
-          <span class="stat-value" id="statRepos">0</span>
-          <span class="stat-label">Public Repos</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-value" id="statFollowers">0</span>
-          <span class="stat-label">Followers</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-value" id="statFollowing">0</span>
-          <span class="stat-label">Following</span>
-        </div>
-      </section>
+      <!-- Main Languages -->
+      <div class="section">
+        <h3>Main Languages</h3>
+        <div id="languages" class="languages-list"></div>
+      </div>
 
-      <!-- Section: Main Languages -->
-      <section class="card-section">
-        <div class="section-heading">
-          <h3 class="section-title">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="16 18 22 12 16 6"></polyline>
-              <polyline points="8 6 2 12 8 18"></polyline>
-            </svg>
-            Main Languages
-          </h3>
-          <span class="section-subtitle">Aggregated from public repositories</span>
-        </div>
+      <!-- Top Repositories -->
+      <div class="section">
+        <h3>Top Repositories</h3>
+        <div id="repos" class="repos-grid"></div>
+      </div>
 
-        <!-- Language Progress Bar -->
-        <div id="languageBar" class="language-bar"></div>
+      <!-- Recent Activity -->
+      <div class="section">
+        <h3>Recent Activity</h3>
+        <ul id="activity" class="activity-list"></ul>
+      </div>
 
-        <!-- Language Percent Badges -->
-        <div id="languageList" class="language-list"></div>
-      </section>
-
-      <!-- Section: Top Repositories -->
-      <section class="card-section">
-        <div class="section-heading">
-          <h3 class="section-title">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-            </svg>
-            Top Repositories
-          </h3>
-          <span class="section-subtitle">Ranked by community stars</span>
-        </div>
-
-        <div id="reposGrid" class="repos-grid"></div>
-      </section>
-
-      <!-- Section: Recent Activity -->
-      <section class="card-section">
-        <div class="section-heading">
-          <h3 class="section-title">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-            </svg>
-            Recent Activity
-          </h3>
-          <span class="section-subtitle">Latest public events on GitHub</span>
-        </div>
-
-        <ul id="activityList" class="activity-list"></ul>
-      </section>
-
-    </main>
-
-    <!-- Global Toast Alert -->
-    <div id="toast" class="toast" style="display: none;">Link copied to clipboard!</div>
-
-  </div>
+    </section>
+  </main>
 
   <script src="app.js"></script>
 </body>
