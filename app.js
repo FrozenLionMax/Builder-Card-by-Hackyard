@@ -46,7 +46,6 @@ const languageBar = document.getElementById("languageBar");
 const languageList = document.getElementById("languageList");
 const reposGrid = document.getElementById("reposGrid");
 const activityList = document.getElementById("activityList");
-const generatedTimestamp = document.getElementById("generatedTimestamp");
 
 // Action buttons & toast
 const copyLinkBtn = document.getElementById("copyLinkBtn");
@@ -108,9 +107,6 @@ async function loadBuilderCard(rawUsername) {
     renderLanguages(repos);
     renderTopRepos(repos);
     renderActivity(events);
-
-    // Update timestamp
-    generatedTimestamp.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
     // Display the populated builder card
     showState("card");

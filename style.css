@@ -536,6 +536,10 @@ body {
   margin-bottom: 26px;
 }
 
+.card-section:last-of-type {
+  margin-bottom: 0;
+}
+
 .section-heading {
   display: flex;
   justify-content: space-between;
